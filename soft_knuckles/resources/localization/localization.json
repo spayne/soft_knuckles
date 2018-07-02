@@ -1,0 +1,14 @@
+[
+  {
+    "language_tag": "en_US",
+    "soft_knuckles" : "Soft Knuckles Controller",
+    "/input/a" : "A Button",
+    "/input/b" : "B Button",
+    "/input/pinch" : "Pinch Gesture",
+    "/input/finger/index" : "Index Finger",
+    "/input/finger/middle" : "Middle Finger",
+    "/input/finger/ring" : "Ring Finger",
+    "/input/finger/pinky" : "Pinky Finger",
+    "/input/thumbstick" : "Thumb Stick"
+  }
+]

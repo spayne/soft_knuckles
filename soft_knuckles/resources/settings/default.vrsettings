@@ -1,0 +1,7 @@
+{
+	"driver_soft_knuckles" : {
+		"enable" : true,
+		"serialNumber" : "ksoft1", 
+		"modelNumber" : "soft_knuckles"
+	}
+}
