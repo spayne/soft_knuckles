@@ -18,6 +18,22 @@
 #include <io.h>
 #include <tchar.h>
 #include <windows.h>
+#define LAST_ERROR() WSAGetLastError() 
+#define CLOSE_SOCKET(x) closesocket(x)
+#define SHUTDOWN_BOTH 2
+#else
+#define SOCKET int
+#define INVALID_SOCKET (-1) 
+#define SOCKET_ERROR (-1) 
+#define CLOSE_SOCKET(x) close(x)
+#define LAST_ERROR() errno 
+#define SHUTDOWN_BOTH SHUT_RDWR
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <unistd.h>
 #endif
 
 #include <thread>
@@ -44,16 +60,17 @@ class SoftKnucklesProvider : public IServerTrackedDeviceProvider
     SoftKnucklesDevice m_knuckles[NUM_DEVICES];
     SoftKnucklesDebugHandler m_debug_handler[NUM_DEVICES];
     thread m_thread;    // a thread to wait to know when to add the new devices;
-    
+	SOCKET m_listen_socket;
+
     static void listen_thread(SoftKnucklesProvider *pthis)
     {
 #ifdef _WIN32
         HRESULT hr = SetThreadDescription(GetCurrentThread(), L"soft knuckles listen to activate thread");
 #endif
         dprintf("listen thread started\n");
-        SOCKET ListenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (ListenSocket == INVALID_SOCKET) {
-            dprintf("socket failed with error: %ld\n", WSAGetLastError());
+        pthis->m_listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (pthis->m_listen_socket == INVALID_SOCKET) {
+            dprintf("socket failed with error: %ld\n", LAST_ERROR());
             return;
         }
         else
@@ -64,22 +81,24 @@ class SoftKnucklesProvider : public IServerTrackedDeviceProvider
             service.sin_addr.s_addr = inet_addr(listen_address);
             service.sin_port = htons(listen_port);
 
-            if (::bind(ListenSocket, (sockaddr*)&service, sizeof(service)) == SOCKET_ERROR) {
-                dprintf("bind failed with error: %ld\n", WSAGetLastError());
-                closesocket(ListenSocket);
+            if (::bind(pthis->m_listen_socket, (sockaddr*)&service, sizeof(service)) == SOCKET_ERROR) {
+                dprintf("bind failed with error: %ld\n", LAST_ERROR());
+                CLOSE_SOCKET(pthis->m_listen_socket);
+				pthis->m_listen_socket = -1;
                 return;
             }
 
-            if (listen(ListenSocket, 1) == SOCKET_ERROR) {
-                dprintf("listen failed with error: %ld\n", WSAGetLastError());
-                closesocket(ListenSocket);
+            if (listen(pthis->m_listen_socket, 1) == SOCKET_ERROR) {
+                dprintf("listen failed with error: %ld\n", LAST_ERROR());
+                CLOSE_SOCKET(pthis->m_listen_socket);
+				pthis->m_listen_socket = -1;
             }
             else
             {
-                SOCKET incoming = accept(ListenSocket, nullptr, nullptr);
+                SOCKET incoming = accept(pthis->m_listen_socket, nullptr, nullptr);
                 if (0 > incoming)
                 {
-                    dprintf("accept failed with error: %ld\n", WSAGetLastError());
+                    dprintf("accept failed with error: %ld\n", LAST_ERROR());
                 }
                 else
                 {
@@ -93,13 +112,15 @@ class SoftKnucklesProvider : public IServerTrackedDeviceProvider
                             &pthis->m_knuckles[i]);
                     }
                 }
-                closesocket(ListenSocket);
+                CLOSE_SOCKET(pthis->m_listen_socket);
+				pthis->m_listen_socket = -1;
             }
         }
     }
 
 public:
     SoftKnucklesProvider()
+		: m_listen_socket(-1)
     {
         dprintf("SoftKnucklesProvider: constructor called\n");
     }
@@ -125,6 +146,12 @@ public:
     virtual void Cleanup() override
     {
         dprintf("SoftKnucklesProvider: Cleanup\n");
+		// close my listener socket
+		if (m_listen_socket != -1)
+		{
+			shutdown(m_listen_socket, SHUTDOWN_BOTH);
+			m_listen_socket = -1;
+		}
         EnterStandby(); // shuts down threads in devices
         m_thread.join();
     }
