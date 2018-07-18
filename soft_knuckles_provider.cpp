@@ -14,36 +14,18 @@
 // earlier so that you can use a tested and real controller and then add the 
 // simulated ones in later.
 //
-#if defined(_WIN32)
-#include <io.h>
-#include <tchar.h>
+
+#if defined( _WIN32 )
 #include <windows.h>
-#define LAST_ERROR() WSAGetLastError() 
-#define CLOSE_SOCKET(x) closesocket(x)
-#define SHUTDOWN_BOTH 2
-#else
-#define SOCKET int
-#define INVALID_SOCKET (-1) 
-#define SOCKET_ERROR (-1) 
-#define CLOSE_SOCKET(x) close(x)
-#define LAST_ERROR() errno 
-#define SHUTDOWN_BOTH SHUT_RDWR
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <unistd.h>
 #endif
 
 #include <thread>
-#include <mutex>
 #include <string.h>
-#include <vector>
 #include <string>
 #include <openvr_driver.h>
 #include "soft_knuckles_device.h"
 #include "soft_knuckles_debug_handler.h"
+#include "socket_notifier.h"
 #include "dprintf.h"
 
 using namespace vr;
@@ -53,74 +35,26 @@ namespace soft_knuckles
 
 static const int NUM_DEVICES = 2;
 static const char *listen_address = "127.0.0.1";
-static const u_short listen_port = 27015;
+static const unsigned short listen_port = 27015;
+
+class SoftKnucklesProvider;
+class SoftKnucklesSocketNotifier : public SocketNotifier
+{
+	SoftKnucklesProvider *m_provider;
+public:
+	SoftKnucklesSocketNotifier(SoftKnucklesProvider *p);
+	void Notify() override;
+};
 
 class SoftKnucklesProvider : public IServerTrackedDeviceProvider
 {
     SoftKnucklesDevice m_knuckles[NUM_DEVICES];
     SoftKnucklesDebugHandler m_debug_handler[NUM_DEVICES];
-    thread m_thread;    // a thread to wait to know when to add the new devices;
-	SOCKET m_listen_socket;
-
-    static void listen_thread(SoftKnucklesProvider *pthis)
-    {
-#ifdef _WIN32
-        HRESULT hr = SetThreadDescription(GetCurrentThread(), L"soft knuckles listen to activate thread");
-#endif
-        dprintf("listen thread started\n");
-        pthis->m_listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (pthis->m_listen_socket == INVALID_SOCKET) {
-            dprintf("socket failed with error: %ld\n", LAST_ERROR());
-            return;
-        }
-        else
-        {
-            sockaddr_in service;
-            memset(&service, 0, sizeof(service));
-            service.sin_family = AF_INET;
-            service.sin_addr.s_addr = inet_addr(listen_address);
-            service.sin_port = htons(listen_port);
-
-            if (::bind(pthis->m_listen_socket, (sockaddr*)&service, sizeof(service)) == SOCKET_ERROR) {
-                dprintf("bind failed with error: %ld\n", LAST_ERROR());
-                CLOSE_SOCKET(pthis->m_listen_socket);
-				pthis->m_listen_socket = -1;
-                return;
-            }
-
-            if (listen(pthis->m_listen_socket, 1) == SOCKET_ERROR) {
-                dprintf("listen failed with error: %ld\n", LAST_ERROR());
-                CLOSE_SOCKET(pthis->m_listen_socket);
-				pthis->m_listen_socket = -1;
-            }
-            else
-            {
-                SOCKET incoming = accept(pthis->m_listen_socket, nullptr, nullptr);
-                if (0 > incoming)
-                {
-                    dprintf("accept failed with error: %ld\n", LAST_ERROR());
-                }
-                else
-                {
-                    dprintf("new connection on port port: %d\n", listen_port);
-                    // add devices
-                    for (int i = 0; i < NUM_DEVICES; i++)
-                    {
-                        vr::VRServerDriverHost()->TrackedDeviceAdded(
-                            pthis->m_knuckles[i].get_serial().c_str(),
-                            TrackedDeviceClass_Controller,
-                            &pthis->m_knuckles[i]);
-                    }
-                }
-                CLOSE_SOCKET(pthis->m_listen_socket);
-				pthis->m_listen_socket = -1;
-            }
-        }
-    }
+	SoftKnucklesSocketNotifier m_notifier;
 
 public:
     SoftKnucklesProvider()
-		: m_listen_socket(-1)
+		: m_notifier(this)
     {
         dprintf("SoftKnucklesProvider: constructor called\n");
     }
@@ -137,23 +71,29 @@ public:
         m_knuckles[1].Init(TrackedControllerRole_RightHand, component_definitions_right, NUM_INPUT_COMPONENT_DEFINITIONS, 
                             &m_debug_handler[1]);
 
-        // start the listening thread after both devices have been initialized
-        m_thread = thread(listen_thread, this);
+		m_notifier.StartListening(listen_address, listen_port);
 
         return VRInitError_None;
     }
 
+	// not virtual: 
+	void AddDevices()
+	{
+		for (int i = 0; i < NUM_DEVICES; i++)
+		{
+			vr::VRServerDriverHost()->TrackedDeviceAdded(
+				m_knuckles[i].get_serial().c_str(),
+				TrackedDeviceClass_Controller,
+				&m_knuckles[i]);
+		}
+	}
+
     virtual void Cleanup() override
     {
         dprintf("SoftKnucklesProvider: Cleanup\n");
-		// close my listener socket
-		if (m_listen_socket != -1)
-		{
-			shutdown(m_listen_socket, SHUTDOWN_BOTH);
-			m_listen_socket = -1;
-		}
-        EnterStandby(); // shuts down threads in devices
-        m_thread.join();
+		m_notifier.StopListening();
+		m_knuckles[0].Deactivate();
+		m_knuckles[1].Deactivate();
     }
     virtual const char * const *GetInterfaceVersions() override
     {
@@ -181,10 +121,21 @@ public:
     virtual void LeaveStandby() override
     {
         dprintf("SoftKnucklesProvider: LeaveStandby\n");
-        m_knuckles[0].Reactivate(); 
-        m_knuckles[1].Reactivate();
+        //m_knuckles[0].Reactivate(); 
+        //m_knuckles[1].Reactivate();
     }
+	
 };
+
+SoftKnucklesSocketNotifier::SoftKnucklesSocketNotifier(SoftKnucklesProvider *p)
+	: m_provider(p)
+{
+}
+
+void SoftKnucklesSocketNotifier::Notify()
+{
+	m_provider->AddDevices();
+}
 } // end of namespace 
 
 bool g_bExiting = false;

@@ -30,6 +30,9 @@
     <ClCompile Include="soft_knuckles_debug_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="socket_notifier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dprintf.h">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="soft_knuckles_debug_handler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_notifier.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

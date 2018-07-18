@@ -21,7 +21,6 @@
 #include "soft_knuckles_config.h"
 #include "soft_knuckles_debug_handler.h"
 
-
 using namespace vr;
 using namespace std;
 
@@ -35,7 +34,7 @@ SoftKnucklesDevice::SoftKnucklesDevice()
             m_role(TrackedControllerRole_Invalid),
             m_running(false)
     {
-        dprintf("soft_knuckles constructor\n");
+        dprintf("SoftKnucklesDevice::SoftKnucklesDevice\n");
         m_pose = { 0 };
         m_pose.poseIsValid = true;
         m_pose.result = vr::TrackingResult_Running_OK;
@@ -60,7 +59,7 @@ void SoftKnucklesDevice::Init(
     uint32_t num_component_definitions,
     SoftKnucklesDebugHandler *debug_handler)
 {
-    dprintf("soft_knuckles Init for role: %d num_definitions %d\n", role, num_component_definitions);
+    dprintf("SoftKnucklesDevice::Init for role: %d num_definitions %d\n", role, num_component_definitions);
 
     m_component_definitions = component_definitions;
     m_num_component_definitions = num_component_definitions;
@@ -77,12 +76,13 @@ void SoftKnucklesDevice::Init(
     if (m_role == TrackedControllerRole_LeftHand)
     {
         m_serial_number += "L";
-        m_render_model_name = "{knuckles}/rendermodels/valve_controller_knu_ev2_0_left";    // TODO, use own models
+        m_render_model_name = "{soft_knuckles}/rendermodels/soft_knuckles_placeholder_left";
     }
     else if (m_role == TrackedControllerRole_RightHand)
     {
         m_serial_number += "R";
-        m_render_model_name = "{knuckles}/rendermodels/valve_controller_knu_ev2_0_right";
+        m_render_model_name = "{soft_knuckles}/rendermodels/soft_knuckles_placeholder_right";
+		m_pose.vecPosition[0] += 0.2f; // offset the right a little
     }
         
     dprintf("soft_knuckles serial: %s\n", m_serial_number.c_str());
@@ -100,17 +100,13 @@ void SoftKnucklesDevice::EnterStandby()
     if (m_running)
     {
         m_running = false;
-        if (m_pose_thread.joinable())
-        {
-            m_pose_thread.join();
-        }
     }
 }
 
 VRInputComponentHandle_t SoftKnucklesDevice::CreateBooleanComponent(const char *full_path)
 {
+	dprintf("SoftKnucklesDevice::CreateBooleanComponent for %s on %d\n", full_path, m_tracked_device_container);
     VRInputComponentHandle_t input_handle = k_ulInvalidInputComponentHandle;
-    dprintf("soft_knuckles creating bool handle for %s on %d\n", full_path, m_tracked_device_container);
     EVRInputError input_error = vr::VRDriverInput()->CreateBooleanComponent(m_tracked_device_container, full_path, &input_handle); // note it goes into the container specific to this instance of the device
     if (input_error != VRInputError_None)
     {
@@ -125,8 +121,8 @@ VRInputComponentHandle_t SoftKnucklesDevice::CreateBooleanComponent(const char *
 
 VRInputComponentHandle_t SoftKnucklesDevice::CreateScalarComponent(const char *full_path, EVRScalarType scalar_type, EVRScalarUnits scalar_units)
 {
+	dprintf("SoftKnucklesDevice::CreateScalarComponent for %s on %d\n", full_path, m_tracked_device_container);
     VRInputComponentHandle_t input_handle = k_ulInvalidInputComponentHandle;
-    dprintf("soft_knuckles creating scalar input handle for %s on %d\n", full_path, m_tracked_device_container);
     EVRInputError input_error = vr::VRDriverInput()->CreateScalarComponent(m_tracked_device_container, full_path, &input_handle,
                     scalar_type, scalar_units);
     
@@ -143,8 +139,8 @@ VRInputComponentHandle_t SoftKnucklesDevice::CreateScalarComponent(const char *f
 
 VRInputComponentHandle_t SoftKnucklesDevice::CreateHapticComponent(const char *name)
 {
+	dprintf("SoftKnucklesDevice::CreateHapticComponent for %s\n", name);
     VRInputComponentHandle_t input_handle = k_ulInvalidInputComponentHandle;
-    dprintf("soft_knuckles creating haptic handle for %s\n", name);
     EVRInputError input_error = vr::VRDriverInput()->CreateHapticComponent(m_tracked_device_container, name, &input_handle); // note it goes into the container specific to this instance of the device
     if (input_error != VRInputError_None)
     {
@@ -160,8 +156,8 @@ VRInputComponentHandle_t SoftKnucklesDevice::CreateHapticComponent(const char *n
 VRInputComponentHandle_t SoftKnucklesDevice::CreateSkeletonComponent(const char *name, const char *skeleton_path, const char *base_pose_path,
                                 const VRBoneTransform_t *pGripLimitTransforms, uint32_t unGripLimitTransformCount)
 {
+	dprintf("SoftKnucklesDevice::CreateSkeletonComponent for %s\n", name);
     VRInputComponentHandle_t input_handle = k_ulInvalidInputComponentHandle;
-    dprintf("soft_knuckles creating skeleton handle for %s\n", name);
     EVRInputError input_error = vr::VRDriverInput()->CreateSkeletonComponent(m_tracked_device_container, name, skeleton_path, base_pose_path,
                                                                                 pGripLimitTransforms, unGripLimitTransformCount, &input_handle);
     if (input_error != VRInputError_None)
@@ -204,6 +200,7 @@ void SoftKnucklesDevice::update_pose_thread(SoftKnucklesDevice *pthis)
 
 EVRInitError SoftKnucklesDevice::Activate(uint32_t unObjectId) 
 {
+	dprintf("SoftKnucklesDevice::Activate.  object ID: %d\n", unObjectId);
     if (m_activated)
     {
         dprintf("warning: Activate called twice\n");
@@ -212,7 +209,6 @@ EVRInitError SoftKnucklesDevice::Activate(uint32_t unObjectId)
     m_activated = true;
     m_id = unObjectId;
     m_tracked_device_container = vr::VRProperties()->TrackedDeviceToPropertyContainer(m_id);
-    dprintf("soft_knuckles Activated.  object ID: %d\n", m_id);
 
     SetProperty(Prop_SerialNumber_String, m_serial_number.c_str());
     SetProperty(Prop_ModelNumber_String, m_model_number.c_str());
@@ -247,25 +243,23 @@ EVRInitError SoftKnucklesDevice::Activate(uint32_t unObjectId)
 
     m_running = true;
     m_pose_thread = thread(update_pose_thread, this);
+	m_pose_thread.detach();
 
     return VRInitError_None;
 }
 
 void SoftKnucklesDevice::Deactivate() 
 {
-    dprintf("soft_knuckles Deactivating.  object ID: %d\n", m_id);
+    dprintf("SoftKnucklesDevice::Deactivate.  object ID: %d\n", m_id);
     if (m_running)
     {
-        m_running = false;
-        if (m_pose_thread.joinable())
-            m_pose_thread.join();
-    
+		m_running = false; // signal to pose thread to shut down
     }
 }
 
 void SoftKnucklesDevice::Reactivate()
 {
-    dprintf("SoftKnucklesDevice::Reactivate()\n");
+    dprintf("SoftKnucklesDevice::Reactivate() object ID: %d\n", m_id);
     if (!m_running)
     {
         m_running = true;
@@ -276,7 +270,7 @@ void SoftKnucklesDevice::Reactivate()
 void *SoftKnucklesDevice::GetComponent(const char *pchComponentNameAndVersion)
 {
     // GetComponent will get called for the IVRControllerComponent_001
-    dprintf("soft_knuckles GetComponent: %s\n");
+    dprintf("SoftKnucklesDevice::GetComponent: %s\n");
     return nullptr;
 }
 
