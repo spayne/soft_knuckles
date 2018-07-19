@@ -112,8 +112,8 @@ void SocketNotifierImpl::listen_thread(SocketNotifierImpl *pthis)
 			}
 			else
 			{
-				closesocket(incoming);
-				if (closesocket(pthis->m_listen_socket) < 0)
+				CLOSE_SOCKET(incoming);
+				if (CLOSE_SOCKET(pthis->m_listen_socket) < 0)
 				{
 					dprintf("close failed - must be shutting down\n");
 				}

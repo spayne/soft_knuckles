@@ -2,24 +2,24 @@
 	"jsonid" : "vrresources",
 	"statusicons" : {
 		"LeftController" : {
-			"Prop_NamedIconPathDeviceOff_String" : "{knuckles}/icons/left_controller_status_off.png",
-			"Prop_NamedIconPathDeviceSearching_String" : "{knuckles}/icons/left_controller_status_searching.gif",
-			"Prop_NamedIconPathDeviceSearchingAlert_String" : "{knuckles}/icons/left_controller_status_searching_alert.gif",
-			"Prop_NamedIconPathDeviceReady_String" : "{knuckles}/icons/left_controller_status_ready.png",
-			"Prop_NamedIconPathDeviceReadyAlert_String" : "{knuckles}/icons/left_controller_status_ready_alert.png",
-			"Prop_NamedIconPathDeviceNotReady_String" : "{knuckles}/icons/left_controller_status_error.png",
-			"Prop_NamedIconPathDeviceStandby_String" : "{knuckles}/icons/left_controller_status_off.png",
-			"Prop_NamedIconPathDeviceAlertLow_String" : "{knuckles}/icons/left_controller_status_ready_low.png"
+			"Prop_NamedIconPathDeviceOff_String" : "{soft_knuckles}/icons/left_controller_status_off.png",
+			"Prop_NamedIconPathDeviceSearching_String" : "{soft_knuckles}/icons/left_controller_status_searching.gif",
+			"Prop_NamedIconPathDeviceSearchingAlert_String" : "{soft_knuckles}/icons/left_controller_status_searching_alert.gif",
+			"Prop_NamedIconPathDeviceReady_String" : "{soft_knuckles}/icons/left_controller_status_ready.png",
+			"Prop_NamedIconPathDeviceReadyAlert_String" : "{soft_knuckles}/icons/left_controller_status_ready_alert.png",
+			"Prop_NamedIconPathDeviceNotReady_String" : "{soft_knuckles}/icons/left_controller_status_error.png",
+			"Prop_NamedIconPathDeviceStandby_String" : "{soft_knuckles}/icons/left_controller_status_off.png",
+			"Prop_NamedIconPathDeviceAlertLow_String" : "{soft_knuckles}/icons/left_controller_status_ready_low.png"
 		},
 		"RightController" : {
-			"Prop_NamedIconPathDeviceOff_String" : "{knuckles}/icons/right_controller_status_off.png",
-			"Prop_NamedIconPathDeviceSearching_String" : "{knuckles}/icons/right_controller_status_searching.gif",
-			"Prop_NamedIconPathDeviceSearchingAlert_String" : "{knuckles}/icons/right_controller_status_searching_alert.gif",
-			"Prop_NamedIconPathDeviceReady_String" : "{knuckles}/icons/right_controller_status_ready.png",
-			"Prop_NamedIconPathDeviceReadyAlert_String" : "{knuckles}/icons/right_controller_status_ready_alert.png",
-			"Prop_NamedIconPathDeviceNotReady_String" : "{knuckles}/icons/right_controller_status_error.png",
-			"Prop_NamedIconPathDeviceStandby_String" : "{knuckles}/icons/right_controller_status_off.png",
-			"Prop_NamedIconPathDeviceAlertLow_String" : "{knuckles}/icons/right_controller_status_ready_low.png"
+			"Prop_NamedIconPathDeviceOff_String" : "{soft_knuckles}/icons/right_controller_status_off.png",
+			"Prop_NamedIconPathDeviceSearching_String" : "{soft_knuckles}/icons/right_controller_status_searching.gif",
+			"Prop_NamedIconPathDeviceSearchingAlert_String" : "{soft_knuckles}/icons/right_controller_status_searching_alert.gif",
+			"Prop_NamedIconPathDeviceReady_String" : "{soft_knuckles}/icons/right_controller_status_ready.png",
+			"Prop_NamedIconPathDeviceReadyAlert_String" : "{soft_knuckles}/icons/right_controller_status_ready_alert.png",
+			"Prop_NamedIconPathDeviceNotReady_String" : "{soft_knuckles}/icons/right_controller_status_error.png",
+			"Prop_NamedIconPathDeviceStandby_String" : "{soft_knuckles}/icons/right_controller_status_off.png",
+			"Prop_NamedIconPathDeviceAlertLow_String" : "{soft_knuckles}/icons/right_controller_status_ready_low.png"
 		}
     }	    
 }

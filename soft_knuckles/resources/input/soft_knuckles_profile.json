@@ -6,11 +6,11 @@
   "input_bindingui_mode" : "controller_handed",
   "input_bindingui_left" :
   {
-    "image": "{knuckles}/icons/knuckles_left.svg"
+    "image": "{soft_knuckles}/icons/knuckles_left.svg"
   },
   "input_bindingui_right" :
   {
-    "image": "{knuckles}/icons/knuckles_right.svg"
+    "image": "{soft_knuckles}/icons/knuckles_right.svg"
   },
   "input_source" :
   {
