@@ -31,7 +31,7 @@
         { "/input/b/touch", CT_BOOLEAN },\
         { "/input/application_menu/click",  CT_BOOLEAN },\
         { "/input/application_menu/touch",  CT_BOOLEAN },\
-        { "/input/skeleton/" # HAND, CT_SKELETON,EVRScalarType(0),EVRScalarUnits(0),"/skeleton/hand/" # HAND, "/pose/raw" },\
+        { "/input/skeleton/" HAND, CT_SKELETON,EVRScalarType(0),EVRScalarUnits(0),"/skeleton/hand/" HAND, "/pose/raw" },\
 \
         { "/output/haptic", CT_HAPTIC },\
     }

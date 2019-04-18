@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "soft_knuckles", "soft_knuck
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "soft_knuckles_debug_client", "soft_knuckles_debug_client\soft_knuckles_debug_client.vcxproj", "{B874E443-FD03-4AF6-9EE2-8B1D27B62E42}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_app_new_input_api", "test_app_new_input_api\test_app_new_input_api\test_app_new_input_api.vcxproj", "{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{B874E443-FD03-4AF6-9EE2-8B1D27B62E42}.Release|x64.Build.0 = Release|x64
 		{B874E443-FD03-4AF6-9EE2-8B1D27B62E42}.Release|x86.ActiveCfg = Release|Win32
 		{B874E443-FD03-4AF6-9EE2-8B1D27B62E42}.Release|x86.Build.0 = Release|Win32
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Debug|x64.ActiveCfg = Debug|x64
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Debug|x64.Build.0 = Debug|x64
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Debug|x86.ActiveCfg = Debug|Win32
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Debug|x86.Build.0 = Debug|Win32
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Release|x64.ActiveCfg = Release|x64
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Release|x64.Build.0 = Release|x64
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Release|x86.ActiveCfg = Release|Win32
+		{ADEDAB5B-7390-44AC-ACC8-4135B9E557A7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

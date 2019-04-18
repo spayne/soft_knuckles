@@ -33,7 +33,7 @@ using namespace vr;
 namespace soft_knuckles
 {
 
-static const int NUM_DEVICES = 2;
+static const int NUM_DEVICES = 1;
 static const char *listen_address = "127.0.0.1";
 static const unsigned short listen_port = 27015;
 
@@ -65,11 +65,17 @@ public:
         VR_INIT_SERVER_DRIVER_CONTEXT(pDriverContext);
         dprintf("SoftKnucklesProvider: Init called\n");
 
-        m_knuckles[0].Init(TrackedControllerRole_LeftHand, component_definitions_left, NUM_INPUT_COMPONENT_DEFINITIONS, 
-                            &m_debug_handler[0]);
+		if (NUM_DEVICES > 0)
+		{
 
-        m_knuckles[1].Init(TrackedControllerRole_RightHand, component_definitions_right, NUM_INPUT_COMPONENT_DEFINITIONS, 
-                            &m_debug_handler[1]);
+			m_knuckles[0].Init(TrackedControllerRole_LeftHand, component_definitions_left, NUM_INPUT_COMPONENT_DEFINITIONS,
+				&m_debug_handler[0]);
+		}
+		if (NUM_DEVICES > 1)
+		{
+			m_knuckles[1].Init(TrackedControllerRole_RightHand, component_definitions_right, NUM_INPUT_COMPONENT_DEFINITIONS,
+				&m_debug_handler[1]);
+		}
 
 		m_notifier.StartListening(listen_address, listen_port);
 
@@ -82,7 +88,8 @@ public:
 		for (int i = 0; i < NUM_DEVICES; i++)
 		{
 			vr::VRServerDriverHost()->TrackedDeviceAdded(
-				m_knuckles[i].get_serial().c_str(),
+				m_knuckles[i].
+				get_serial().c_str(),
 				TrackedDeviceClass_Controller,
 				&m_knuckles[i]);
 		}
@@ -92,8 +99,11 @@ public:
     {
         dprintf("SoftKnucklesProvider: Cleanup\n");
 		m_notifier.StopListening();
-		m_knuckles[0].Deactivate();
-		m_knuckles[1].Deactivate();
+		for (int i = 0; i < NUM_DEVICES; i++)
+		{
+			m_knuckles[i].Deactivate();
+		}
+		
     }
     virtual const char * const *GetInterfaceVersions() override
     {
@@ -115,8 +125,10 @@ public:
     virtual void EnterStandby() override
     {
         dprintf("SoftKnucklesProvider: EnterStandby\n");
-        m_knuckles[0].Deactivate();
-        m_knuckles[1].Deactivate();
+		for (int i = 0; i < NUM_DEVICES; i++)
+		{
+			m_knuckles[i].Deactivate();
+		}
     }
     virtual void LeaveStandby() override
     {
@@ -160,7 +172,7 @@ void WatchdogThreadFunction()
     {
 #if defined( _WINDOWS )
         // on windows send the event when the Y key is pressed.
-        if ((0x01 & GetAsyncKeyState('Y')) != 0)
+        //if ((0x01 & GetAsyncKeyState('Y')) != 0)
         {
             // Y key was pressed. 
             vr::VRWatchdogHost()->WatchdogWakeUp();

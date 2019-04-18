@@ -87,23 +87,6 @@
         "type" : "pose",
         "binding_image_point" : [ 5, 35 ]
     },
-    "/pose/base" : {
-        "type" : "pose",
-        "binding_image_point" : [ 65, 136 ]
-    },
-    "/pose/handgrip" : {
-        "type" : "pose",
-        "binding_image_point" : [ 56, 95 ]
-    },
-    "/pose/tip" : {
-        "type" : "pose",
-        "binding_image_point" : [ 5, 35 ]
-    },
-    "/pose/gdc2015" : {
-        "type" : "pose",
-        "binding_image_point" : [ 5, 35 ]
-    },
-
     "/input/skeleton/left" : {
         "type" : "skeleton",
         "skeleton": "/skeleton/hand/left",
